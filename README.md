@@ -34,7 +34,6 @@ This project is a simple financial management system built with Python and MySQL
    ```sh
    python FinancialManagement.py
 
-
 2. Follow the on-screen menu to manage accounts and transactions.
 
 
