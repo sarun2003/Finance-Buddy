@@ -1,0 +1,161 @@
+import mysql.connector as sqlct
+import datetime
+
+def createdb():
+    global mycn
+    global mycur
+    # Connect to MySQL server
+    mycn = sqlct.connect(host="localhost", user="root", password="MySQLPassword")
+    if mycn.is_connected():
+        print("Financial Management System Database Connected.")
+    
+    # Create a cursor object
+    mycur = mycn.cursor()
+    
+    # Create the database if it doesn't exist
+    cmd1 = "CREATE DATABASE IF NOT EXISTS financialdb"
+    mycur.execute(cmd1)
+    
+    # Use the database
+    mycur.execute("USE financialdb")
+    
+    # Create the accounts table if it doesn't exist
+    cmd1 = "CREATE TABLE IF NOT EXISTS accounts(AccountID INTEGER PRIMARY KEY, AccountName CHAR(50) NOT NULL, AccountType CHAR(50), Balance FLOAT)"
+    mycur.execute(cmd1)
+    
+    # Create the transactions table if it doesn't exist
+    cmd2 = "CREATE TABLE IF NOT EXISTS transactions(TransactionID INTEGER PRIMARY KEY AUTO_INCREMENT, AccountID INTEGER, Amount FLOAT, TransactionType CHAR(10), Date DATE, FOREIGN KEY (AccountID) REFERENCES accounts(AccountID))"
+    mycur.execute(cmd2)
+
+# Function to add an account
+def add_account():
+    AccountID = int(input("Enter the account ID: "))
+    AccountName = input("Enter the account name: ")
+    AccountType = input("Enter the account type: ")
+    Balance = float(input("Enter the account balance: "))
+    cmd = f"INSERT INTO accounts VALUES ({AccountID}, '{AccountName}', '{AccountType}', {Balance})"
+    mycur.execute(cmd)
+    print("Account added successfully")
+
+# Function to display accounts
+def display_accounts():
+    cmd = "SELECT * FROM accounts"
+    mycur.execute(cmd)
+    accounts = mycur.fetchall()
+    print("AccountID\tAccountName\tAccountType\tBalance")
+    for account in accounts:
+        print(f"{account[0]}\t{account[1]}\t{account[2]}\t{account[3]}")
+
+# Function to search an account
+def search_account():
+    account_name = input("Enter the account name to search: ")
+    cmd = f"SELECT * FROM accounts WHERE AccountName LIKE '%{account_name}%'"
+    mycur.execute(cmd)
+    account = mycur.fetchone()
+    if account:
+        print(f"AccountID: {account[0]}\tAccountName: {account[1]}\tAccountType: {account[2]}\tBalance: {account[3]}")
+    else:
+        print("No account found.")
+
+# Function to add a transaction
+def add_transaction():
+    AccountID = int(input("Enter the account ID: "))
+    Amount = float(input("Enter the transaction amount: "))
+    TransactionType = input("Enter the transaction type (Credit/Debit): ")
+    Date = input("Enter the transaction date (yyyy-mm-dd): ")
+    cmd = f"INSERT INTO transactions (AccountID, Amount, TransactionType, Date) VALUES ({AccountID}, {Amount}, '{TransactionType}', '{Date}')"
+    mycur.execute(cmd)
+    print("Transaction added successfully")
+
+# Function to display transactions
+def display_transactions():
+    cmd = "SELECT * FROM transactions"
+    mycur.execute(cmd)
+    transactions = mycur.fetchall()
+    print("TransactionID\tAccountID\tAmount\tTransactionType\tDate")
+    for transaction in transactions:
+        print(f"{transaction[0]}\t{transaction[1]}\t{transaction[2]}\t{transaction[3]}\t{transaction[4]}")
+
+# Function to search a transaction
+def search_transaction():
+    trans_id = int(input("Enter the transaction ID to search: "))
+    cmd = f"SELECT * FROM transactions WHERE TransactionID = {trans_id}"
+    mycur.execute(cmd)
+    transaction = mycur.fetchone()
+    if transaction:
+        print(f"TransactionID: {transaction[0]}\tAccountID: {transaction[1]}\tAmount: {transaction[2]}\tTransactionType: {transaction[3]}\tDate: {transaction[4]}")
+    else:
+        print("No transaction found.")
+
+# Function to delete a transaction
+def delete_transaction():
+    trans_id = int(input("Enter the transaction ID to delete: "))
+    cmd = f"DELETE FROM transactions WHERE TransactionID = {trans_id}"
+    mycur.execute(cmd)
+    print("Transaction deleted successfully")
+
+# Function to edit a transaction
+def edit_transaction():
+    trans_id = int(input("Enter the transaction ID to edit: "))
+    cmd = f"SELECT * FROM transactions WHERE TransactionID = {trans_id}"
+    mycur.execute(cmd)
+    transaction = mycur.fetchone()
+    if transaction:
+        new_amount = float(input("Enter the new amount: "))
+        new_type = input("Enter the new transaction type (Credit/Debit): ")
+        cmd = f"UPDATE transactions SET Amount = {new_amount}, TransactionType = '{new_type}' WHERE TransactionID = {trans_id}"
+        mycur.execute(cmd)
+        print("Transaction updated successfully")
+    else:
+        print("No transaction found.")
+
+# Main menu
+print("Financial Management System")
+createdb()
+while True:
+    print("\nMain Menu")
+    print("1. Account Management")
+    print("2. Transaction Management")
+    print("3. Exit")
+    choice = int(input("Enter your choice: "))
+    if choice == 1:
+        while True:
+            print("\nAccount Management")
+            print("1. Add Account")
+            print("2. Display Accounts")
+            print("3. Search Account")
+            print("4. Exit")
+            acc_choice = int(input("Enter your choice: "))
+            if acc_choice == 1:
+                add_account()
+            elif acc_choice == 2:
+                display_accounts()
+            elif acc_choice == 3:
+                search_account()
+            elif acc_choice == 4:
+                break
+    elif choice == 2:
+        while True:
+            print("\nTransaction Management")
+            print("1. Add Transaction")
+            print("2. Display Transactions")
+            print("3. Search Transaction")
+            print("4. Edit Transaction")
+            print("5. Delete Transaction")
+            print("6. Exit")
+            trans_choice = int(input("Enter your choice: "))
+            if trans_choice == 1:
+                add_transaction()
+            elif trans_choice == 2:
+                display_transactions()
+            elif trans_choice == 3:
+                search_transaction()
+            elif trans_choice == 4:
+                edit_transaction()
+            elif trans_choice == 5:
+                delete_transaction()
+            elif trans_choice == 6:
+                break
+    elif choice == 3:
+        mycn.commit()
+        break
