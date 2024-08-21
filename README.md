@@ -1,4 +1,4 @@
-# Financial Manager
+# Finance Buddy
 
 This project is a simple financial management system built with Python and MySQL.
 
